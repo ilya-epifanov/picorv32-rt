@@ -9,9 +9,16 @@ fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let name = env::var("CARGO_PKG_NAME").unwrap();
 
+    let feature_compressed_isa = env::var("CARGO_FEATURE_COMPRESSED_ISA").is_ok();
+
     if target.starts_with("riscv") {
+        let lib_name = if feature_compressed_isa {
+            "riscv32ic-unknown-none-elf"
+        } else {
+            "riscv32i-unknown-none-elf"
+        };
         fs::copy(
-            format!("bin/{}.a", target),
+            format!("bin/{}.a", lib_name),
             out_dir.join(format!("lib{}.a", name)),
         ).unwrap();
 

@@ -1,14 +1,14 @@
-[![crates.io](https://img.shields.io/crates/d/riscv-rt.svg)](https://crates.io/crates/riscv-rt)
-[![crates.io](https://img.shields.io/crates/v/riscv-rt.svg)](https://crates.io/crates/riscv-rt)
-[![Build Status](https://travis-ci.org/rust-embedded/riscv-rt.svg?branch=master)](https://travis-ci.org/rust-embedded/riscv-rt)
+[![crates.io](https://img.shields.io/crates/d/riscv-minimal-rt.svg)](https://crates.io/crates/riscv-minimal-rt)
+[![crates.io](https://img.shields.io/crates/v/riscv-minimal-rt.svg)](https://crates.io/crates/riscv-minimal-rt)
+[![Build Status](https://travis-ci.org/ilya-epifanov/riscv-minimal-rt.svg?branch=master)](https://travis-ci.org/ilya-epifanov/riscv-minimal-rt)
 
-# `riscv-rt`
+# `riscv-minimal-rt`
 
-> Minimal runtime / startup for RISCV CPU's.
+> (Very) minimal runtime / startup for RISCV CPU's.
 
 This project is developed and maintained by the [RISCV team][team].
 
-## [Documentation](https://docs.rs/crate/riscv-rt)
+## [Documentation](https://docs.rs/crate/riscv-minimal-rt)
 
 ## License
 

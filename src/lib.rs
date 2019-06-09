@@ -30,7 +30,7 @@
 //! $ # add this crate as a dependency
 //! $ edit Cargo.toml && cat $_
 //! [dependencies]
-//! riscv-rt = "0.4.0"
+//! riscv-minimal-rt = "0.4.0"
 //! panic-halt = "0.2.0"
 //!
 //! $ # memory layout of the device
@@ -203,11 +203,12 @@
 #![deny(warnings)]
 
 extern crate riscv;
-extern crate riscv_rt_macros as macros;
+extern crate riscv_minimal_rt_macros as macros;
 extern crate r0;
 
 pub use macros::{entry, pre_init};
 
+#[cfg(feature = "interrupts")]
 use riscv::register::{mstatus, mtvec};
 
 extern "C" {
@@ -223,6 +224,7 @@ extern "C" {
     static _sidata: u32;
 
     // Address of _start_trap
+    #[cfg(feature = "interrupts")]
     static _start_trap: u32;
 }
 
@@ -250,6 +252,7 @@ pub unsafe extern "C" fn start_rust() -> ! {
     // TODO: Enable FPU when available
 
     // Set mtvec to _start_trap
+    #[cfg(feature = "interrupts")]
     mtvec::write(&_start_trap as *const _ as usize, mtvec::TrapMode::Direct);
 
     main();
@@ -274,6 +277,7 @@ pub extern "C" fn start_trap_rust() {
         trap_handler();
 
         // mstatus, remain in M-mode after mret
+        #[cfg(feature = "interrupts")]
         mstatus::set_mpp(mstatus::MPP::Machine);
     }
 }

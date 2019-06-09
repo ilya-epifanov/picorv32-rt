@@ -1,7 +1,7 @@
 [package]
-name = "riscv-rt"
+name = "riscv-minimal-rt"
 version = "0.5.0"
-repository = "https://github.com/rust-embedded/riscv-rt"
+repository = "https://github.com/ilya-epifanov/riscv-minimal-rt"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "no-std"]
 description = "Minimal runtime / startup for RISC-V CPU's"
@@ -11,7 +11,15 @@ license = "ISC"
 [dependencies]
 r0 = "0.2.2"
 riscv = "0.5.0"
-riscv-rt-macros = { path = "macros", version = "0.1.5" }
+riscv-minimal-rt-macros = { path = "macros", version = "0.1.5" }
 
 [features]
+default = ["compressed-isa"]
 inline-asm = ["riscv/inline-asm"]
+compressed-isa = []
+interrupts = []
+
+[workspace]
+members = [
+  "macros",
+]
