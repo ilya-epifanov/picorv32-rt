@@ -8,8 +8,8 @@ description = "Attributes re-exported in `riscv-minimal-rt`"
 documentation = "https://docs.rs/riscv-minimal-rt"
 keywords = ["riscv", "runtime", "startup"]
 license = "MIT OR Apache-2.0"
-name = "riscv-minimal-rt-macros"
-repository = "https://github.com/rust-embedded/riscv-minimal-rt"
+name = "picorv32-rt-macros"
+repository = "https://github.com/ilya-epifanov/picorv32-rt"
 version = "0.1.5"
 
 [lib]

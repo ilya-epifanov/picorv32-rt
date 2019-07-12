@@ -1,11 +1,9 @@
-//! Minimal startup / runtime for RISC-V CPU's
+//! Minimal startup / runtime for PicoRV32 RISC-V CPU
 //!
 //! # Minimum Supported Rust Version (MSRV)
 //!
-//! This crate is guaranteed to compile on stable Rust 1.31 and up. It *might*
+//! This crate is guaranteed to compile on stable Rust 1.32 and up. It *might*
 //! compile with older versions but that may change in any new patch release.
-//! Note that `riscv64imac-unknown-none-elf` and `riscv64gc-unknown-none-elf` targets
-//! are not supported on stable yet.
 //!
 //! # Features
 //!
@@ -13,12 +11,10 @@
 //!
 //! - Before main initialization of the `.bss` and `.data` sections.
 //!
-//! - Before main initialization of the FPU (for targets that have a FPU).
-//!
 //! - `#[entry]` to declare the entry point of the program
 //! - `#[pre_init]` to run code *before* `static` variables are initialized
 //!
-//! - A linker script that encodes the memory layout of a generic RISC-V
+//! - A linker script that encodes the memory layout of a PicoRV32 RISC-V
 //!   microcontroller. This linker script is missing some information that must
 //!   be supplied through a `memory.x` file (see example below).
 //!
@@ -30,7 +26,7 @@
 //! $ # add this crate as a dependency
 //! $ edit Cargo.toml && cat $_
 //! [dependencies]
-//! riscv-minimal-rt = "0.4.0"
+//! picorv32-rt = "0.4.0"
 //! panic-halt = "0.2.0"
 //!
 //! $ # memory layout of the device
@@ -38,8 +34,8 @@
 //! MEMORY
 //! {
 //!   /* NOTE K = KiBi = 1024 bytes */
-//!   FLASH : ORIGIN = 0x20000000, LENGTH = 16M
-//!   RAM : ORIGIN = 0x80000000, LENGTH = 16K
+//!   FLASH : ORIGIN = 0x00100000, LENGTH = 0x400000
+//!   RAM : ORIGIN = 0x00000000, LENGTH = 0x3800
 //! }
 //!
 //! $ edit src/main.rs && cat $_
@@ -51,7 +47,7 @@
 //!
 //! extern crate panic_halt;
 //!
-//! use riscv_rt::entry;
+//! use picorv32::entry;
 //!
 //! // use `main` as the entry point of this application
 //! // `main` is not allowed to return
@@ -64,13 +60,13 @@
 //!
 //! ``` text
 //! $ mkdir .cargo && edit .cargo/config && cat $_
-//! [target.riscv32imac-unknown-none-elf]
+//! [target.riscv32imc-unknown-none-elf]
 //! rustflags = [
 //!   "-C", "link-arg=-Tlink.x"
 //! ]
 //!
 //! [build]
-//! target = "riscv32imac-unknown-none-elf"
+//! target = "riscv32imc-unknown-none-elf"
 //! $ edit build.rs && cat $_
 //! ```
 //!
@@ -203,13 +199,10 @@
 #![deny(warnings)]
 
 extern crate riscv;
-extern crate riscv_minimal_rt_macros as macros;
+extern crate picorv32_rt_macros as macros;
 extern crate r0;
 
 pub use macros::{entry, pre_init};
-
-#[cfg(feature = "interrupts")]
-use riscv::register::{mstatus, mtvec};
 
 extern "C" {
     // Boundaries of the .bss section
@@ -249,11 +242,8 @@ pub unsafe extern "C" fn start_rust() -> ! {
     r0::zero_bss(&mut _sbss, &mut _ebss);
     r0::init_data(&mut _sdata, &mut _edata, &_sidata);
 
-    // TODO: Enable FPU when available
-
-    // Set mtvec to _start_trap
     #[cfg(feature = "interrupts")]
-    mtvec::write(&_start_trap as *const _ as usize, mtvec::TrapMode::Direct);
+    picorv32::interrupt::enable();
 
     main();
 }
@@ -261,32 +251,80 @@ pub unsafe extern "C" fn start_rust() -> ! {
 
 /// Trap entry point rust (_start_trap_rust)
 ///
-/// mcause is read to determine the cause of the trap. XLEN-1 bit indicates
-/// if it's an interrupt or an exception. The result is converted to an element
-/// of the Interrupt or Exception enum and passed to handle_interrupt or
-/// handle_exception.
+/// `irqs` is a bitmask off IRQs to handle
 #[link_section = ".trap.rust"]
 #[export_name = "_start_trap_rust"]
-pub extern "C" fn start_trap_rust() {
+pub extern "C" fn start_trap_rust(irqs: u32) {
     extern "C" {
-        fn trap_handler();
+        fn trap_handler(irqs: u32);
     }
 
     unsafe {
         // dispatch trap to handler
-        trap_handler();
-
-        // mstatus, remain in M-mode after mret
-        #[cfg(feature = "interrupts")]
-        mstatus::set_mpp(mstatus::MPP::Machine);
+        trap_handler(irqs);
     }
 }
 
 
 /// Default Trap Handler
 #[no_mangle]
-pub fn default_trap_handler() {}
+pub fn default_trap_handler(_irqs: u32) {}
 
 #[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "Rust" fn default_pre_init() {}
+
+/// Usage:
+///
+/// ```
+/// use core::sync::atomic;
+/// use core::sync::atomic::Ordering;
+///
+/// pub fn timer() {
+///     // ...
+/// }
+///
+/// pub fn illegal_instruction() {
+///     loop {
+///         atomic::compiler_fence(Ordering::SeqCst);
+///     }
+/// }
+///
+/// pub fn bus_error() {
+///     loop {
+///         atomic::compiler_fence(Ordering::SeqCst);
+///     }
+/// }
+///
+/// pub fn irq5() {
+///     // ...
+/// }
+///
+/// pub fn irq6() {
+///     // ...
+/// }
+///
+/// picorv32_interrupts!(
+///     0: timer,
+///     1: illegal_instruction,
+///     2: bus_error,
+///     5: irq5,
+///     6: irq6
+/// );
+/// ```
+#[cfg(feature = "interrupts")]
+#[macro_export] macro_rules! picorv32_interrupts {
+    (@interrupt ($n:literal, $pending_irqs:expr, $handler:ident)) => {
+        if $pending_irqs & (1 << $n) != 0 {
+            $handler();
+        }
+    };
+    ( $( $irq:literal : $handler:ident ),* ) => {
+        #[no_mangle]
+        pub extern "C" fn trap_handler(pending_irqs: u32) {
+            $(
+                picorv32_interrupts!(@interrupt($irq, pending_irqs, $handler));
+            )*
+        }
+    };
+}

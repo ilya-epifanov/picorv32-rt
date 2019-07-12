@@ -10,13 +10,25 @@ fn main() {
     let name = env::var("CARGO_PKG_NAME").unwrap();
 
     let feature_compressed_isa = env::var("CARGO_FEATURE_COMPRESSED_ISA").is_ok();
+    let feature_interrupts = env::var("CARGO_FEATURE_INTERRUPTS").is_ok();
+    let feature_interrupts_qregs = env::var("CARGO_FEATURE_INTERRUPTS_QREGS").is_ok();
 
     if target.starts_with("riscv") {
-        let lib_name = if feature_compressed_isa {
-            "riscv32ic-unknown-none-elf"
+        let arch_features = if feature_compressed_isa {
+            "ic"
         } else {
-            "riscv32i-unknown-none-elf"
+            "i"
         };
+        let cpu_features = if feature_interrupts_qregs {
+            "RV32RT_INTERRUPTS_QREGS"
+        } else if feature_interrupts {
+            "RV32RT_INTERRUPTS"
+        } else {
+            "RV32RT_BARE"
+        };
+
+        let lib_name = format!("riscv32{}-unknown-none-elf_{}", arch_features, cpu_features);
+
         fs::copy(
             format!("bin/{}.a", lib_name),
             out_dir.join(format!("lib{}.a", name)),

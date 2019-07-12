@@ -6,6 +6,12 @@
     pointer. Then it calls _start_rust.
 */
 
+#include "custom_ops.S"
+
+.section .initjmp, "ax"
+    jal zero, _start
+
+
 .section .init, "ax"
 .global _start
 
@@ -16,6 +22,7 @@ _start:
     .option push
     .option norelax
     la gp, __global_pointer$
+    addi tp, gp, 0
     .option pop
 
     la sp, _stack_start
@@ -37,50 +44,125 @@ _start:
 .global _start_trap
 
 _start_trap:
+
+#if defined(RV32RT_INTERRUPTS) || defined(RV32RT_INTERRUPTS_QREGS)
+
+#ifdef RV32RT_INTERRUPTS_QREGS
+
+	picorv32_setq_insn(q2, x1)
+	picorv32_setq_insn(q3, x2)
+
     addi sp, sp, -16*4
 
-    sw ra, 0*4(sp)
-    sw t0, 1*4(sp)
-    sw t1, 2*4(sp)
-    sw t2, 3*4(sp)
-    sw t3, 4*4(sp)
-    sw t4, 5*4(sp)
-    sw t5, 6*4(sp)
-    sw t6, 7*4(sp)
-    sw a0, 8*4(sp)
-    sw a1, 9*4(sp)
-    sw a2, 10*4(sp)
-    sw a3, 11*4(sp)
-    sw a4, 12*4(sp)
-    sw a5, 13*4(sp)
-    sw a6, 14*4(sp)
-    sw a7, 15*4(sp)
+	sw gp,   0*4(sp)
+	sw x5,   1*4(sp)
+	sw x6,   2*4(sp)
+	sw x7,   3*4(sp)
+	sw x10,  4*4(sp)
+	sw x11,  5*4(sp)
+	sw x12,  6*4(sp)
+	sw x13,  7*4(sp)
+	sw x14,  8*4(sp)
+	sw x15,  9*4(sp)
+	sw x16, 10*4(sp)
+	sw x17, 11*4(sp)
+	sw x28, 12*4(sp)
+	sw x29, 13*4(sp)
+	sw x30, 14*4(sp)
+    sw x31, 15*4(sp)
+
+#else
+
+    addi sp, sp, -18*4
+
+	sw gp,   0*4(sp)
+	sw x1,   1*4(sp)
+	sw x2,   2*4(sp)
+	sw x5,   3*4(sp)
+	sw x6,   4*4(sp)
+	sw x7,   5*4(sp)
+	sw x10,  6*4(sp)
+	sw x11,  7*4(sp)
+	sw x12,  8*4(sp)
+	sw x13,  9*4(sp)
+	sw x14, 10*4(sp)
+	sw x15, 11*4(sp)
+	sw x16, 12*4(sp)
+	sw x17, 13*4(sp)
+	sw x28, 14*4(sp)
+	sw x29, 15*4(sp)
+	sw x30, 16*4(sp)
+    sw x31, 17*4(sp)
+
+#endif
+
+#ifdef RV32RT_INTERRUPTS_QREGS
+	picorv32_getq_insn(a0, q1)
+#else
+	addi a0, tp, 0
+#endif
 
     jal ra, _start_trap_rust
 
-    lw ra, 0*4(sp)
-    lw t0, 1*4(sp)
-    lw t1, 2*4(sp)
-    lw t2, 3*4(sp)
-    lw t3, 4*4(sp)
-    lw t4, 5*4(sp)
-    lw t5, 6*4(sp)
-    lw t6, 7*4(sp)
-    lw a0, 8*4(sp)
-    lw a1, 9*4(sp)
-    lw a2, 10*4(sp)
-    lw a3, 11*4(sp)
-    lw a4, 12*4(sp)
-    lw a5, 13*4(sp)
-    lw a6, 14*4(sp)
-    lw a7, 15*4(sp)
+#ifdef RV32RT_INTERRUPTS_QREGS
+
+	picorv32_getq_insn(x1, q2)
+	picorv32_getq_insn(x2, q3)
+
+	lw gp,   0*4(sp)
+	lw x5,   1*4(sp)
+	lw x6,   2*4(sp)
+	lw x7,   3*4(sp)
+	lw x10,  4*4(sp)
+	lw x11,  5*4(sp)
+	lw x12,  6*4(sp)
+	lw x13,  7*4(sp)
+	lw x14,  8*4(sp)
+	lw x15,  9*4(sp)
+	lw x16, 10*4(sp)
+	lw x17, 11*4(sp)
+	lw x28, 12*4(sp)
+	lw x29, 13*4(sp)
+	lw x30, 14*4(sp)
+    lw x31, 15*4(sp)
 
     addi sp, sp, 16*4
-    mret
 
+#else
+
+	lw gp,   0*4(sp)
+	lw x1,   1*4(sp)
+	lw x2,   2*4(sp)
+	lw x5,   3*4(sp)
+	lw x6,   4*4(sp)
+	lw x7,   5*4(sp)
+	lw x10,  6*4(sp)
+	lw x11,  7*4(sp)
+	lw x12,  8*4(sp)
+	lw x13,  9*4(sp)
+	lw x14, 10*4(sp)
+	lw x15, 11*4(sp)
+	lw x16, 12*4(sp)
+	lw x17, 13*4(sp)
+	lw x28, 14*4(sp)
+	lw x29, 15*4(sp)
+	lw x30, 16*4(sp)
+    lw x31, 17*4(sp)
+
+    addi sp, sp, 18*4
+
+#endif
+
+    picorv32_retirq_insn()
+
+#else
+
+    jal zero, _start
+
+#endif
 
 /* Make sure there is an abort when linking */
 .section .init
-.globl abort
+.global abort
 abort:
     jal zero, _start

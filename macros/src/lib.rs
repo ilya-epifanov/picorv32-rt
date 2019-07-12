@@ -45,7 +45,7 @@ use proc_macro::TokenStream;
 ///
 /// ``` no_run
 /// # #![no_main]
-/// # use riscv_minimal_rt_macros::entry;
+/// # use picorv32_rt_macros::entry;
 /// #[entry]
 /// fn main() -> ! {
 ///     loop {
@@ -120,7 +120,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # Examples
 ///
 /// ```
-/// # use riscv_minimal_rt_macros::pre_init;
+/// # use picorv32_rt_macros::pre_init;
 /// #[pre_init]
 /// unsafe fn before_main() {
 ///     // do something here

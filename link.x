@@ -18,10 +18,11 @@ SECTIONS
   {
     /* Put reset handler first in .text section so it ends up as the entry */
     /* point of the program. */
+    KEEP(*(.initjmp));
+    . = ALIGN(0x10);
+    KEEP(*(.trap));
     KEEP(*(.init));
     KEEP(*(.init.rust));
-    . = ALIGN(4);
-    KEEP(*(.trap));
     KEEP(*(.trap.rust));
 
     *(.text .text.*);
