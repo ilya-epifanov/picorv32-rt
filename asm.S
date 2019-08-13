@@ -96,10 +96,11 @@ _start_trap:
 
 #endif
 
+	addi a0, sp, 0
 #ifdef RV32RT_INTERRUPTS_QREGS
-	picorv32_getq_insn(a0, q1)
+	picorv32_getq_insn(a1, q1)
 #else
-	addi a0, tp, 0
+	addi a1, tp, 0
 #endif
 
     jal ra, _start_trap_rust
