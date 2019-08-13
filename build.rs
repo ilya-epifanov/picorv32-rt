@@ -14,11 +14,7 @@ fn main() {
     let feature_interrupts_qregs = env::var("CARGO_FEATURE_INTERRUPTS_QREGS").is_ok();
 
     if target.starts_with("riscv") {
-        let arch_features = if feature_compressed_isa {
-            "ic"
-        } else {
-            "i"
-        };
+        let arch_features = if feature_compressed_isa { "ic" } else { "i" };
         let cpu_features = if feature_interrupts_qregs {
             "RV32RT_INTERRUPTS_QREGS"
         } else if feature_interrupts {
@@ -32,7 +28,8 @@ fn main() {
         fs::copy(
             format!("bin/{}.a", lib_name),
             out_dir.join(format!("lib{}.a", name)),
-        ).unwrap();
+        )
+        .unwrap();
 
         println!("cargo:rustc-link-lib=static={}", name);
         println!("cargo:rustc-link-search={}", out_dir.display());

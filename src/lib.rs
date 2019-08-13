@@ -197,13 +197,13 @@
 #![no_std]
 #![deny(missing_docs)]
 
-extern crate riscv;
 extern crate picorv32_rt_macros as macros;
 extern crate r0;
+extern crate riscv;
 
-pub use macros::{entry, pre_init};
-use core::ptr::NonNull;
 use core::fmt;
+use core::ptr::NonNull;
+pub use macros::{entry, pre_init};
 use picorv32::asm;
 
 extern "C" {
@@ -222,7 +222,6 @@ extern "C" {
     #[cfg(feature = "interrupts")]
     static _start_trap: u32;
 }
-
 
 /// Rust entry point (_start_rust)
 ///
@@ -414,10 +413,12 @@ impl fmt::Debug for PicoRV32StoredRegisters {
         };
 
         let (instr, long_instr) = {
-            let mut instr: u32 = *(unsafe { NonNull::new_unchecked(pc as *mut u16).as_ref() }) as u32;
+            let mut instr: u32 =
+                *(unsafe { NonNull::new_unchecked(pc as *mut u16).as_ref() }) as u32;
             let long_instr = (instr & 3) == 3;
             if long_instr {
-                let instr2 = *(unsafe { NonNull::new_unchecked((pc + 2) as *mut u16).as_ref() }) as u32;
+                let instr2 =
+                    *(unsafe { NonNull::new_unchecked((pc + 2) as *mut u16).as_ref() }) as u32;
                 instr = instr | instr2 << 16;
             }
             (instr, long_instr)
@@ -430,11 +431,38 @@ impl fmt::Debug for PicoRV32StoredRegisters {
             writeln!(f, "{:04x}", instr)?;
         }
 
-        writeln!(f, "SP: {:08x}\tGP: {:08x}", self.x2(), self. x3())?;
-        writeln!(f, "T0: {:08x}\tT1: {:08x}\tT2: {:08x}", self.x5(), self.x6(), self.x7())?;
-        writeln!(f, "A0: {:08x}\tA1: {:08x}\tA2: {:08x}\tA3: {:08x}", self.x10(), self.x11(), self.x12(), self.x13())?;
-        writeln!(f, "A4: {:08x}\tA5: {:08x}\tA6: {:08x}\tA7: {:08x}", self.x14(), self.x15(), self.x16(), self.x17())?;
-        writeln!(f, "T3: {:08x}\tT4: {:08x}\tT5: {:08x}\tT6: {:08x}", self.x28(), self.x29(), self.x30(), self.x31())?;
+        writeln!(f, "SP: {:08x}\tGP: {:08x}", self.x2(), self.x3())?;
+        writeln!(
+            f,
+            "T0: {:08x}\tT1: {:08x}\tT2: {:08x}",
+            self.x5(),
+            self.x6(),
+            self.x7()
+        )?;
+        writeln!(
+            f,
+            "A0: {:08x}\tA1: {:08x}\tA2: {:08x}\tA3: {:08x}",
+            self.x10(),
+            self.x11(),
+            self.x12(),
+            self.x13()
+        )?;
+        writeln!(
+            f,
+            "A4: {:08x}\tA5: {:08x}\tA6: {:08x}\tA7: {:08x}",
+            self.x14(),
+            self.x15(),
+            self.x16(),
+            self.x17()
+        )?;
+        writeln!(
+            f,
+            "T3: {:08x}\tT4: {:08x}\tT5: {:08x}\tT6: {:08x}",
+            self.x28(),
+            self.x29(),
+            self.x30(),
+            self.x31()
+        )?;
         Ok(())
     }
 }
@@ -504,18 +532,20 @@ pub extern "C" fn start_trap_rust(regs: *const u32, irqs: u32) {
 
     unsafe {
         // dispatch trap to handler
-        trap_handler(NonNull::new_unchecked(regs as *mut PicoRV32StoredRegisters).as_ref(), irqs);
+        trap_handler(
+            NonNull::new_unchecked(regs as *mut PicoRV32StoredRegisters).as_ref(),
+            irqs,
+        );
     }
 }
 
-
 /// Default Trap Handler
 #[no_mangle]
-pub extern "Rust" fn default_trap_handler(_irqs: u32) {}
+pub fn default_trap_handler(_irqs: u32) {}
 
 #[doc(hidden)]
 #[no_mangle]
-pub unsafe extern "Rust" fn default_pre_init() {}
+pub unsafe fn default_pre_init() {}
 
 /// Usage:
 ///
@@ -556,7 +586,8 @@ pub unsafe extern "Rust" fn default_pre_init() {}
 /// );
 /// ```
 #[cfg(feature = "interrupts")]
-#[macro_export] macro_rules! picorv32_interrupts {
+#[macro_export]
+macro_rules! picorv32_interrupts {
     (@interrupt ($n:literal, $pending_irqs:expr, $regs:expr, $handler:ident)) => {
         if $pending_irqs & (1 << $n) != 0 {
             $handler($regs);
