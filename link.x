@@ -55,7 +55,7 @@ SECTIONS
   PROVIDE(_heap_size = 0);
 
   /* fictitious region that represents the memory available for the heap */
-  .heap (INFO) :
+  .heap (NOLOAD) :
   {
     _sheap = .;
     . += _heap_size;
@@ -64,7 +64,7 @@ SECTIONS
   } > RAM
 
   /* fictitious region that represents the memory available for the stack */
-  .stack (INFO) :
+  .stack (NOLOAD) :
   {
     _estack = .;
     . = _stack_start;
