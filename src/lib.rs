@@ -199,12 +199,14 @@
 
 extern crate picorv32_rt_macros as macros;
 extern crate r0;
-extern crate riscv;
 
 use core::fmt;
 use core::ptr::NonNull;
 pub use macros::{entry, pre_init};
-use picorv32::asm;
+use picorv32;
+
+/// Provides the assembly expected by the linker script (link.x).
+pub mod asm;
 
 extern "C" {
     // Boundaries of the .bss section
@@ -330,21 +332,18 @@ impl PicoRV32StoredRegisters {
 
     /// `x10`/`a0` (a0, saved by caller)
     #[inline]
-    #[cfg(not(feature = "interrupts-qregs"))]
     pub fn x10(&self) -> u32 {
         self.x10
     }
 
     /// `x11`/`a1` (a1, saved by caller)
     #[inline]
-    #[cfg(not(feature = "interrupts-qregs"))]
     pub fn x11(&self) -> u32 {
         self.x11
     }
 
     /// `x12`/`a2` (a2, saved by caller)
     #[inline]
-    #[cfg(not(feature = "interrupts-qregs"))]
     pub fn x12(&self) -> u32 {
         self.x12
     }
@@ -606,5 +605,5 @@ macro_rules! picorv32_interrupts {
 
 /// sleep until an interrupt is received
 pub fn wfi() {
-    let _irqs = unsafe { asm::waitirq() };
+    let _irqs = unsafe { picorv32::asm::waitirq() };
 }

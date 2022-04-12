@@ -11,13 +11,12 @@ edition = "2018"
 
 [dependencies]
 r0 = "0.2.2"
-riscv = "0.5.0"
-picorv32 = "0.1.3"
+picorv32 = { git = "https://github.com/tobygomersall/picorv32-rs.git" }
 picorv32-rt-macros = { path = "macros", version = "0.1.5" }
 
 [features]
 default = ["compressed-isa"]
-inline-asm = ["riscv/inline-asm", "picorv32/inline-asm"]
+inline-asm = []
 const-fn = ["picorv32/const-fn"]
 compressed-isa = []
 interrupts = []
