@@ -11,6 +11,7 @@ global_asm!(
     ".global _initjmp",
 
     "_initjmp:",
+    // Call _start
     "jal zero, _start"
 );
 
@@ -59,11 +60,10 @@ global_asm!(
 
     "_start_trap:",
 
+    // Create space on the stack
     "addi sp, sp, -16*4",
 
-    ".insn r 0b0001011, 0, 0b0000001, x2, x1, zero", // setq q2, x1
-    ".insn r 0b0001011, 0, 0b0000001, x3, x2, zero", // setq q3, x2
-
+    // Store registers on the stack
     "sw gp,   0*4(sp)",
     "sw x5,   1*4(sp)",
     "sw x6,   2*4(sp)",
@@ -81,15 +81,24 @@ global_asm!(
     "sw x30, 14*4(sp)",
     "sw x31, 15*4(sp)",
 
+    // Store the return address (x1) and stack pointer (x2) in the q registers
+    ".insn r 0b0001011, 0, 0b0000001, x2, x1, zero", // setq q2, x1
+    ".insn r 0b0001011, 0, 0b0000001, x3, x2, zero", // setq q3, x2
+
+    // Store the pointer to the stored registers in a0
     "addi a0, sp, 0",
 
+    // Store the IRQs to be handled bitmask in a1
     ".insn r 0b0001011, 0, 0b0000000, a1, x1, zero", // getq a1, q1
 
+    // Call _start_trap_rust. This function takes a0 and a1 as arguments
     "jal ra, _start_trap_rust",
 
+    // Restore the return address and stack pointer from the q registers
     ".insn r 0b0001011, 0, 0b0000000, x1, x2, zero", // getq x1, q2
     ".insn r 0b0001011, 0, 0b0000000, x2, x3, zero", // getq x2, q3
 
+    // Restore the registers from the stack
     "lw gp,   0*4(sp)",
     "lw x5,   1*4(sp)",
     "lw x6,   2*4(sp)",
@@ -107,8 +116,10 @@ global_asm!(
     "lw x30, 14*4(sp)",
     "lw x31, 15*4(sp)",
 
+    // Undo the stack allocation
     "addi sp, sp, 16*4",
 
+    // Return to the pre intterupt location in the program
     ".insn r 0b0001011, 0, 0b0000010, zero, zero, zero" // retirq
     );
 
@@ -127,8 +138,10 @@ global_asm!(
 
     "_start_trap:",
 
+    // Create space on the stack
     "addi sp, sp, -18*4",
 
+    // Store registers on the stack
     "sw gp,   0*4(sp)",
     "sw x1,   1*4(sp)",
     "sw x2,   2*4(sp)",
@@ -148,12 +161,17 @@ global_asm!(
     "sw x30, 16*4(sp)",
     "sw x31, 17*4(sp)",
 
+    // Store the pointer to the stored registers in a0
     "addi a0, sp, 0",
 
+    // Store the IRQs to be handled bitmask in a1. When q registers are not
+    // enabled, IRQs to be handled bitmask is stored in x4 (tp)
     "addi a1, tp, 0",
 
+    // Call _start_trap_rust. This function takes a0 and a1 as arguments
     "jal ra, _start_trap_rust",
 
+    // Restore the registers from the stack
     "lw gp,   0*4(sp)",
     "lw x1,   1*4(sp)",
     "lw x2,   2*4(sp)",
@@ -173,8 +191,10 @@ global_asm!(
     "lw x30, 16*4(sp)",
     "lw x31, 17*4(sp)",
 
+    // Undo the stack allocation
     "addi sp, sp, 18*4",
 
+    // Return to the pre intterupt location in the program
     ".insn r 0b0001011, 0, 0b0000010, zero, zero, zero" // retirq
     );
 
@@ -190,6 +210,7 @@ global_asm!(
     ".global _start_trap",
 
     "_start_trap:",
+    // Call _start
     "jal zero, _start"
 );
 
@@ -202,5 +223,6 @@ global_asm!(
     ".global abort",
 
     "abort:",
+    // Call _start
     "jal zero, _start"
 );
