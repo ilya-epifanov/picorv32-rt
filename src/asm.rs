@@ -59,10 +59,10 @@ global_asm!(
 
     "_start_trap:",
 
+    "addi sp, sp, -16*4",
+
     ".insn r 0b0001011, 0, 0b0000001, x2, x1, zero", // setq q2, x1
     ".insn r 0b0001011, 0, 0b0000001, x3, x2, zero", // setq q3, x2
-
-    "addi sp, sp, -16*4",
 
     "sw gp,   0*4(sp)",
     "sw x5,   1*4(sp)",
