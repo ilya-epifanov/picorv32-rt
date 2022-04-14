@@ -521,7 +521,7 @@ impl From<PicoRV32StoredRegisters> for PicoRV32AllStoredRegisters {
 
 /// Trap entry point rust (_start_trap_rust)
 ///
-/// `irqs` is a bitmask off IRQs to handle
+/// `irqs` is a bitmask of IRQs to handle.
 #[link_section = ".trap.rust"]
 #[export_name = "_start_trap_rust"]
 pub extern "C" fn start_trap_rust(regs: *const u32, irqs: u32) {
@@ -603,7 +603,7 @@ macro_rules! picorv32_interrupts {
     };
 }
 
-/// sleep until an interrupt is received
+/// Sleep until an interrupt is received
 pub fn wfi() {
     let _irqs = unsafe { picorv32::asm::waitirq() };
 }

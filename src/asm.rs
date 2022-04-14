@@ -1,11 +1,11 @@
 use core::arch::global_asm;
 
+// This assembly is based on the original asm.S file which used to be pre
+// compiled into binary blobs and shipped with the repo.
+
 // Power on program entry point.
 //
 // This function is placed at offset zero and calls start.
-//
-// This assembly is based on the original asm.S file which used to be pre
-// compiled into binary blobs and shipped with the repo.
 global_asm!(
     ".section .initjmp, \"ax\"",
     ".global _initjmp",
@@ -20,9 +20,6 @@ global_asm!(
 // It initializes DWARF call frame information, the stack pointer, the
 // frame pointer (needed for closures to work in start_rust) and the global
 // pointer. Then it calls _start_rust.
-//
-// This assembly is a direct copy from the original asm.S file which used
-// to be pre compiled into binary blobs and shipped with the repo.
 global_asm!(
     ".section .init, \"ax\"",
     ".global _start",
@@ -54,9 +51,6 @@ global_asm!(
 // Callee saved registers s0..11 are not stored and restored. Callee saved
 // registers are saved and restored by the callee (_start_trap_rust will save
 // and restore them if used).
-//
-// This assembly is based on the original asm.S file which used to be pre
-// compiled into binary blobs and shipped with the repo.
 #[cfg(feature = "interrupts-qregs")]
 global_asm!(
     ".section .trap, \"ax\"",
@@ -149,9 +143,6 @@ global_asm!(
 // Callee saved registers s0..11 are not stored and restored. Callee saved
 // registers are saved and restored by the callee (_start_trap_rust will save
 // and restore them if used).
-//
-// This assembly is based on the original asm.S file which used to be pre
-// compiled into binary blobs and shipped with the repo.
 #[cfg(all(feature = "interrupts", not(feature = "interrupts-qregs")))]
 global_asm!(
     ".section .trap, \"ax\"",
@@ -222,9 +213,6 @@ global_asm!(
 // Trap entry point (_start_trap) when interrupts are not enabled.
 //
 // Calls _start.
-//
-// This assembly is based on the original asm.S file which used to be pre
-// compiled into binary blobs and shipped with the repo.
 #[cfg(not(any(feature = "interrupts", feature = "interrupts-qregs")))]
 global_asm!(
     ".section .trap, \"ax\"",
@@ -236,9 +224,6 @@ global_asm!(
 );
 
 // Make sure there is an abort when linking
-//
-// This assembly is a direct copy from the original asm.S file which used
-// to be pre compiled into binary blobs and shipped with the repo.
 global_asm!(
     ".section .init",
     ".global abort",
