@@ -51,6 +51,10 @@ global_asm!(
 // Saves caller saved registers ra, t0..6, a0..7, calls _start_trap_rust,
 // restores caller saved registers and then returns.
 //
+// Callee saved registers s0..11 are not stored and restored. Callee saved
+// registers are saved and restored by the callee (_start_trap_rust will save
+// and restore them if used).
+//
 // This assembly is based on the original asm.S file which used to be pre
 // compiled into binary blobs and shipped with the repo.
 #[cfg(feature = "interrupts-qregs")]
@@ -141,6 +145,10 @@ global_asm!(
 //
 // Saves caller saved registers ra, t0..6, a0..7, calls _start_trap_rust,
 // restores caller saved registers and then returns.
+//
+// Callee saved registers s0..11 are not stored and restored. Callee saved
+// registers are saved and restored by the callee (_start_trap_rust will save
+// and restore them if used).
 //
 // This assembly is based on the original asm.S file which used to be pre
 // compiled into binary blobs and shipped with the repo.
