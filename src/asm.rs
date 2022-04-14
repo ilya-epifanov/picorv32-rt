@@ -81,7 +81,12 @@ global_asm!(
     "sw x30, 14*4(sp)",
     "sw x31, 15*4(sp)",
 
-    // Store the return address (x1) and stack pointer (x2) in the q registers
+    // Store the return address (x1) and stack pointer (x2) in the q
+    // registers.
+    //
+    // NOTE: The `.insn` requires a register name for `rd` but the compiler is
+    // not aware of the `q` registers as they are picorv32 specific. To work
+    // around this we use the `x` register equivalents.
     ".insn r 0b0001011, 0, 0b0000001, x2, x1, zero", // setq q2, x1
     ".insn r 0b0001011, 0, 0b0000001, x3, x2, zero", // setq q3, x2
 
@@ -89,12 +94,20 @@ global_asm!(
     "addi a0, sp, 0",
 
     // Store the IRQs to be handled bitmask in a1
+    //
+    // NOTE: The `.insn` requires a register name for `rs` but the compiler is
+    // not aware of the `q` registers as they are picorv32 specific. To work
+    // around this we use the `x` register equivalents.
     ".insn r 0b0001011, 0, 0b0000000, a1, x1, zero", // getq a1, q1
 
     // Call _start_trap_rust. This function takes a0 and a1 as arguments
     "jal ra, _start_trap_rust",
 
     // Restore the return address and stack pointer from the q registers
+    //
+    // NOTE: The `.insn` requires a register name for `rs` but the compiler is
+    // not aware of the `q` registers as they are picorv32 specific. To work
+    // around this we use the `x` register equivalents.
     ".insn r 0b0001011, 0, 0b0000000, x1, x2, zero", // getq x1, q2
     ".insn r 0b0001011, 0, 0b0000000, x2, x3, zero", // getq x2, q3
 
