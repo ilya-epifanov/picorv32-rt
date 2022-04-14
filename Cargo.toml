@@ -16,7 +16,6 @@ picorv32-rt-macros = { path = "macros", version = "0.1.5" }
 
 [features]
 default = ["compressed-isa"]
-inline-asm = []
 const-fn = ["picorv32/const-fn"]
 compressed-isa = []
 interrupts = []
