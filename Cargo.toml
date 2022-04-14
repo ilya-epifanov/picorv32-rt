@@ -1,6 +1,6 @@
 [package]
 name = "picorv32-rt"
-version = "0.5.3"
+version = "0.5.4"
 repository = "https://github.com/ilya-epifanov/picorv32-rt"
 authors = ["Ilya Epifanov <elijah.epifanov@gmail.com>", "The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "no-std"]
