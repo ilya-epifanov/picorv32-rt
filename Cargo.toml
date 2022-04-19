@@ -1,6 +1,6 @@
 [package]
 name = "picorv32-rt"
-version = "0.5.4"
+version = "0.5.5"
 repository = "https://github.com/ilya-epifanov/picorv32-rt"
 authors = ["Ilya Epifanov <elijah.epifanov@gmail.com>", "The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "no-std"]
@@ -11,7 +11,7 @@ edition = "2018"
 
 [dependencies]
 r0 = "0.2.2"
-picorv32 = { git = "https://github.com/tobygomersall/picorv32-rs.git" }
+picorv32 = "0.1.4"
 picorv32-rt-macros = { path = "macros", version = "0.1.5" }
 
 [features]
